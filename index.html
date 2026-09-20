@@ -48,15 +48,29 @@
         <div class="room-emoji" id="home-room-emoji">🌱</div>
         <div class="char-emoji" id="home-char-emoji">🧍‍♀️</div>
       </div>
-      <p class="home-message" id="home-message">오늘도 잘하고 있어!</p>
-      <div class="home-progress">
-        <div class="home-progress-label">
-          <span>Today's Quest</span>
-          <span id="home-progress-count">0/0</span>
-        </div>
-        <div class="progress-bar"><div class="progress-bar-fill" id="home-progress-fill"></div></div>
+      <div class="quick-actions">
+        <button type="button" class="quick-action-btn" data-open-modal="transaction-modal">💸 지출 추가</button>
+        <button type="button" class="quick-action-btn" data-open-modal="schedule-modal">📝 할일 추가</button>
       </div>
-      <div class="gold-badge">💰 <span id="home-gold">0</span> G</div>
+    </div>
+
+    <div class="home-today-card">
+      <div class="quest-group home-schedule-group">
+        <h2>📅 오늘 일정</h2>
+        <ul id="home-schedule-list" class="quest-list"></ul>
+      </div>
+
+      <div class="home-split">
+        <div class="home-split-col">
+          <h2 class="split-heading">🌱 습관</h2>
+          <ul id="home-habit-list" class="quest-list"></ul>
+        </div>
+        <div class="home-split-col">
+          <h2 class="split-heading">💸 지출</h2>
+          <div class="home-expense-total" id="home-expense-total">₩0</div>
+          <ul id="home-expense-list" class="expense-list"></ul>
+        </div>
+      </div>
     </div>
   </section>
 

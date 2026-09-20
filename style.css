@@ -182,7 +182,8 @@ html, body {
 
 .room-scene {
   position: relative;
-  height: 160px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
   background: #f0f9ec;
   border-radius: 18px;
   margin-bottom: 12px;
@@ -194,13 +195,16 @@ html, body {
 .room-emoji { position: absolute; top: 14px; right: 20px; font-size: 34px; }
 .char-emoji { font-size: 64px; margin-bottom: 8px; }
 
-.home-message {
-  font-size: 15px;
-  color: var(--text);
-  background: #fff7e0;
+.quick-actions { display: flex; gap: 8px; margin-bottom: 12px; }
+.quick-action-btn {
+  flex: 1;
+  background: var(--card-bg);
+  border: 1px solid var(--primary);
+  color: var(--primary);
   border-radius: 12px;
-  padding: 8px 12px;
-  margin: 0 0 16px;
+  padding: 12px 8px;
+  font-size: 14px;
+  font-weight: 700;
 }
 
 .home-progress-label {
@@ -268,6 +272,38 @@ html, body {
 .quest-title { flex: 1; font-size: 14px; }
 .quest-meta { font-size: 12px; color: var(--text-muted); }
 .quest-empty { color: var(--text-muted); font-size: 13px; padding: 8px 0; }
+
+.home-today-card {
+  background: var(--card-bg);
+  border-radius: 20px;
+  padding: 20px 20px 8px;
+  margin-top: 16px;
+  box-shadow: 0 4px 20px rgba(60, 100, 50, 0.06);
+}
+.home-schedule-group { margin-top: 0; }
+
+.home-split { display: flex; gap: 10px; margin-top: 4px; margin-bottom: 12px; align-items: flex-start; }
+.home-split-col { flex: 1; min-width: 0; }
+.split-heading { font-size: 14px; margin: 0 0 8px; }
+.home-split .quest-item { padding: 8px; gap: 6px; }
+.home-split .quest-title { font-size: 12px; }
+.home-split .quest-meta { font-size: 10px; }
+.home-split .quest-check { width: 20px; height: 20px; }
+
+.home-expense-total { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+.expense-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.expense-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 12px;
+}
+.expense-item span:last-child { font-weight: 700; flex-shrink: 0; }
 
 .money-card {
   background: var(--card-bg);

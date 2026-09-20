@@ -350,7 +350,6 @@ async function renderHome() {
   $('#home-level').textContent = `Lv.${char.level}`;
   $('#home-exp-text').textContent = `${char.exp} / ${req} EXP`;
   $('#home-exp-fill').style.width = `${Math.min(100, (char.exp / req) * 100)}%`;
-  $('#home-gold').textContent = char.gold.toLocaleString('ko-KR');
 
   const tier = tierForLevel(char.level);
   $('#home-room-emoji').textContent = ROOM_TIERS[tier];
@@ -362,15 +361,46 @@ async function renderHome() {
   const completions = await DB.getCompletionsByDate(dateStr);
   const completedSubIds = new Set(completions.map((c) => c.questId));
 
-  const total = schedules.length + subQuests.length;
-  const done = schedules.filter((s) => s.completed).length + subQuests.filter((q) => completedSubIds.has(q.id)).length;
-  $('#home-progress-count').textContent = `${done}/${total}`;
-  $('#home-progress-fill').style.width = total ? `${(done / total) * 100}%` : '0%';
+  const sortedSchedules = [...schedules].sort((a, b) => (a.time || '99:99').localeCompare(b.time || '99:99'));
+  $('#home-schedule-list').innerHTML = sortedSchedules.length
+    ? sortedSchedules
+        .map(
+          (s) => `
+    <li class="quest-item ${s.completed ? 'done' : ''}" data-id="${s.id}">
+      <div class="quest-title" data-action="edit-main" data-id="${s.id}">${s.title}
+        <div class="quest-meta">${s.time || '시간 미정'}</div>
+      </div>
+    </li>`
+        )
+        .join('')
+    : '<li class="quest-empty">오늘 등록된 일정이 없어요.</li>';
 
-  let msg = '오늘의 퀘스트를 추가해보세요!';
-  if (total > 0 && done === total) msg = '오늘 퀘스트를 모두 완료했어요! 🎉';
-  else if (done > 0) msg = '오늘도 잘하고 있어! 💪';
-  $('#home-message').textContent = msg;
+  const pendingHabits = subQuests.filter((q) => !completedSubIds.has(q.id));
+  $('#home-habit-list').innerHTML = pendingHabits.length
+    ? pendingHabits
+        .map(
+          (q) => `
+    <li class="quest-item" data-id="${q.id}">
+      <button class="quest-check" data-action="toggle-sub" data-id="${q.id}"></button>
+      <div class="quest-title" data-action="edit-sub" data-id="${q.id}">${q.title}
+        <div class="quest-meta">${repeatLabel(q)}</div>
+      </div>
+    </li>`
+        )
+        .join('')
+    : '<li class="quest-empty">오늘 습관을 모두 완료했어요! 🎉</li>';
+
+  const txns = await DB.getTransactionsByDate(dateStr);
+  const expenseTotal = txns.reduce((s, t) => s + t.amount, 0);
+  $('#home-expense-total').textContent = currency(expenseTotal);
+  $('#home-expense-list').innerHTML = txns.length
+    ? txns
+        .map((t) => {
+          const cat = state.categories.find((c) => c.id === t.categoryId);
+          return `<li class="expense-item" data-action="edit-transaction" data-id="${t.id}"><span>${cat ? cat.icon + ' ' + cat.name : '기타'}</span><span>${currency(t.amount)}</span></li>`;
+        })
+        .join('')
+    : '<li class="quest-empty">오늘 지출 기록이 없어요.</li>';
 }
 
 // ---------------- RENDER: QUEST ----------------
@@ -1077,7 +1107,7 @@ function bindEvents() {
   $('#import-file').addEventListener('change', handleImport);
 
   // delegated click handlers for quest lists
-  ['#quest-main-list', '#week-list'].forEach((sel) => {
+  ['#quest-main-list', '#week-list', '#home-schedule-list'].forEach((sel) => {
     $(sel).addEventListener('click', (e) => {
       const toggleMain = e.target.closest('[data-action="toggle-main"]');
       const editMain = e.target.closest('[data-action="edit-main"]');
@@ -1093,16 +1123,27 @@ function bindEvents() {
     });
   });
 
-  $('#quest-sub-list').addEventListener('click', (e) => {
-    const toggleBtn = e.target.closest('[data-action="toggle-sub"]');
-    const editBtn = e.target.closest('[data-action="edit-sub"]');
-    if (toggleBtn) return toggleSubQuest(toggleBtn.dataset.id, todayKey());
-    if (editBtn) {
-      DB.getAllSubQuests().then((list) => {
-        const q = list.find((x) => x.id === editBtn.dataset.id);
-        if (q) openSubQuestModal(q);
-      });
-    }
+  ['#quest-sub-list', '#home-habit-list'].forEach((sel) => {
+    $(sel).addEventListener('click', (e) => {
+      const toggleBtn = e.target.closest('[data-action="toggle-sub"]');
+      const editBtn = e.target.closest('[data-action="edit-sub"]');
+      if (toggleBtn) return toggleSubQuest(toggleBtn.dataset.id, todayKey());
+      if (editBtn) {
+        DB.getAllSubQuests().then((list) => {
+          const q = list.find((x) => x.id === editBtn.dataset.id);
+          if (q) openSubQuestModal(q);
+        });
+      }
+    });
+  });
+
+  $('#home-expense-list').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-action="edit-transaction"]');
+    if (!btn) return;
+    DB.getAllTransactions().then((list) => {
+      const t = list.find((x) => x.id === btn.dataset.id);
+      if (t) openTransactionModal(t);
+    });
   });
 
   $('#week-prev').addEventListener('click', () => {

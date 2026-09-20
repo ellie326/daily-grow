@@ -1,4 +1,4 @@
-const CACHE_NAME = 'daily-grow-v2';
+const CACHE_NAME = 'daily-grow-v3';
 const APP_SHELL = [
   './',
   './index.html',
