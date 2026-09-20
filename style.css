@@ -36,6 +36,70 @@ html, body {
 .screen { display: none; }
 .screen.active { display: block; }
 
+/* ---- top bar ---- */
+.top-bar {
+  position: sticky;
+  top: 0;
+  z-index: 15;
+  max-width: 480px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border);
+  padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
+}
+.top-bar-title { font-weight: 700; font-size: 15px; }
+.icon-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  line-height: 1;
+  padding: 4px;
+  border-radius: 8px;
+}
+
+/* ---- onboarding ---- */
+.onboarding-screen {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: linear-gradient(180deg, #eaf7e6, var(--bg));
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.onboarding-screen.active { display: flex; }
+.onboarding-card {
+  width: 100%;
+  max-width: 400px;
+  background: var(--card-bg);
+  border-radius: 20px;
+  padding: 28px 24px;
+  box-shadow: 0 8px 30px rgba(60, 100, 50, 0.12);
+  text-align: center;
+}
+.onboarding-card h1 { margin: 0 0 6px; font-size: 22px; }
+.onboarding-card p { color: var(--text-muted); font-size: 13px; margin: 0 0 20px; }
+.onboarding-card label {
+  display: block;
+  text-align: left;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+.onboarding-card input {
+  width: 100%;
+  margin-top: 4px;
+  padding: 11px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  font-size: 14px;
+}
+.onboarding-submit { width: 100%; padding: 12px; margin-top: 6px; }
+
 .screen-header {
   display: flex;
   align-items: center;
@@ -364,6 +428,28 @@ html, body {
   border: 1px solid var(--border);
 }
 .category-form button { flex-shrink: 0; }
+.chip-remove {
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  margin-left: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0;
+}
+
+.settings-subtitle { font-size: 14px; margin: 20px 0 8px; }
+.modal .settings-subtitle:first-of-type { margin-top: 20px; }
+
+.theme-swatches { display: flex; gap: 10px; margin-bottom: 6px; }
+.theme-swatch {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+.theme-swatch.selected { border-color: var(--text); }
 
 /* ---- modal ---- */
 .modal-backdrop {

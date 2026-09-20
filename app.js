@@ -38,12 +38,20 @@ const ACHIEVEMENTS = [
 const WEEKDAY_KO = ['일', '월', '화', '수', '목', '금', '토'];
 const TAG_LABEL = { health: '❤️ 운동/건강', knowledge: '🧠 공부/독서', social: '✨ 기타' };
 
+const THEMES = [
+  { id: 'green', primary: '#3fa34d', primaryLight: '#7ed957', accent: '#ffb648' },
+  { id: 'blue', primary: '#3f7fa3', primaryLight: '#57b8d9', accent: '#ffb648' },
+  { id: 'pink', primary: '#c15a8a', primaryLight: '#f28ab0', accent: '#ffd166' },
+  { id: 'purple', primary: '#7c5fd1', primaryLight: '#a98ff0', accent: '#ffb648' },
+];
+
 // ---------------- STATE ----------------
 const state = {
   weekOffset: 0,
   monthOffset: 0,
   selectedMonthDate: null,
   categories: [],
+  theme: 'green',
 };
 
 // ---------------- UTIL ----------------
@@ -89,10 +97,30 @@ function showToast(msg, duration = 2200) {
 
 // ---------------- MODAL ----------------
 function openModalEl(id) {
+  $$('.modal-backdrop.open').forEach((el) => {
+    if (el.id !== id) el.classList.remove('open');
+  });
   $(`#${id}`).classList.add('open');
 }
 function closeModalEl(id) {
   $(`#${id}`).classList.remove('open');
+}
+
+// ---------------- THEME ----------------
+function applyTheme(themeId) {
+  const theme = THEMES.find((t) => t.id === themeId) || THEMES[0];
+  document.documentElement.style.setProperty('--primary', theme.primary);
+  document.documentElement.style.setProperty('--primary-light', theme.primaryLight);
+  document.documentElement.style.setProperty('--accent', theme.accent);
+  state.theme = theme.id;
+  try {
+    localStorage.setItem('theme', theme.id);
+  } catch (e) {}
+}
+function renderThemeSwatches() {
+  $('#theme-swatches').innerHTML = THEMES.map(
+    (t) => `<button type="button" class="theme-swatch ${state.theme === t.id ? 'selected' : ''}" data-theme="${t.id}" style="background:${t.primary}"></button>`
+  ).join('');
 }
 
 // ---------------- QUEST DUE-DATE LOGIC ----------------
@@ -389,7 +417,7 @@ async function renderQuest() {
   const moneyCard = $('#quest-money-card');
   const result = await computeMoneyQuestStatus('day', dateStr);
   if (!result) {
-    moneyCard.innerHTML = `<p class="quest-empty">오늘의 소비 목표가 설정되지 않았어요. MY LIFE에서 예산을 설정해보세요.</p>`;
+    moneyCard.innerHTML = `<p class="quest-empty">오늘의 소비 목표가 설정되지 않았어요. 우측 상단 ⚙️ 설정에서 예산을 설정해보세요.</p>`;
   } else {
     const statusLabel = { safe: '🟢 SAFE', warning: '🟡 WARNING', over: '🔴 OVER' }[result.status];
     moneyCard.innerHTML = `
@@ -563,10 +591,6 @@ async function renderMyLife() {
       <span class="stat-value">${val}</span>
     </div>`
     )
-    .join('');
-
-  $('#category-list').innerHTML = state.categories
-    .map((c) => `<span class="category-chip">${c.icon} ${c.name}</span>`)
     .join('');
 
   const owned = new Set((await DB.getOwnedRoomItems()).map((i) => i.itemId));
@@ -910,8 +934,34 @@ async function buyRoomItem(itemId) {
   await renderAll();
 }
 
-// ---------------- FORM: CATEGORY ----------------
-async function handleCategorySubmit(e) {
+// ---------------- SETTINGS ----------------
+function renderSettingsCategoryList() {
+  $('#settings-category-list').innerHTML = state.categories
+    .map((c) => `<span class="category-chip">${c.icon} ${c.name}<button type="button" class="chip-remove" data-action="delete-category" data-id="${c.id}">×</button></span>`)
+    .join('');
+}
+
+async function openSettingsModal() {
+  const char = await DB.getCharacter();
+  $('#settings-name').value = char.name || '';
+  $('#settings-income').value = char.monthlyIncome || '';
+  renderSettingsCategoryList();
+  renderThemeSwatches();
+  openModalEl('settings-modal');
+}
+
+async function handleProfileSave() {
+  const char = await DB.getCharacter();
+  const name = $('#settings-name').value.trim() || char.name || 'Ellie';
+  const monthlyIncome = Number($('#settings-income').value) || 0;
+  char.name = name;
+  char.monthlyIncome = monthlyIncome;
+  await DB.saveCharacter(char);
+  showToast('프로필이 저장되었어요.');
+  await renderAll();
+}
+
+async function handleSettingsCategorySubmit(e) {
   e.preventDefault();
   const form = e.target;
   const data = new FormData(form);
@@ -922,7 +972,19 @@ async function handleCategorySubmit(e) {
   await DB.addCategory({ id, name, icon });
   state.categories = await DB.getAllCategories();
   form.reset();
+  renderSettingsCategoryList();
   showToast(`"${name}" 카테고리를 추가했어요.`);
+  await renderAll();
+}
+
+async function handleCategoryDelete(id) {
+  const cat = state.categories.find((c) => c.id === id);
+  if (!cat) return;
+  if (!confirm(`"${cat.name}" 카테고리를 삭제할까요? 이미 기록된 소비 내역은 유지돼요.`)) return;
+  await DB.deleteCategory(id);
+  state.categories = await DB.getAllCategories();
+  renderSettingsCategoryList();
+  showToast(`"${cat.name}" 카테고리를 삭제했어요.`);
   await renderAll();
 }
 
@@ -970,6 +1032,7 @@ function bindEvents() {
       else if (modalId === 'subquest-modal') openSubQuestModal(null);
       else if (modalId === 'transaction-modal') openTransactionModal(null);
       else if (modalId === 'budget-modal') openBudgetModal();
+      else if (modalId === 'settings-modal') openSettingsModal();
     });
   });
   $$('[data-close-modal]').forEach((btn) =>
@@ -997,7 +1060,18 @@ function bindEvents() {
   $('#budget-form').addEventListener('submit', handleBudgetSubmit);
   $('#budget-autodist-btn').addEventListener('click', handleAutoDistribute);
 
-  $('#category-form').addEventListener('submit', handleCategorySubmit);
+  $('#settings-category-form').addEventListener('submit', handleSettingsCategorySubmit);
+  $('#settings-category-list').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-action="delete-category"]');
+    if (btn) handleCategoryDelete(btn.dataset.id);
+  });
+  $('#settings-profile-save').addEventListener('click', handleProfileSave);
+  $('#theme-swatches').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-theme]');
+    if (!btn) return;
+    applyTheme(btn.dataset.theme);
+    renderThemeSwatches();
+  });
 
   $('#export-btn').addEventListener('click', handleExport);
   $('#import-file').addEventListener('change', handleImport);
@@ -1063,19 +1137,55 @@ function bindEvents() {
   });
 }
 
-// ---------------- INIT ----------------
-async function init() {
-  await DB.seedDefaults();
-  state.categories = await DB.getAllCategories();
-  bindEvents();
+// ---------------- ONBOARDING ----------------
+function loadTheme() {
+  let theme = 'green';
+  try {
+    theme = localStorage.getItem('theme') || 'green';
+  } catch (e) {}
+  applyTheme(theme);
+}
+
+async function handleOnboardingSubmit(e) {
+  e.preventDefault();
+  const form = e.target;
+  const data = new FormData(form);
+  const name = data.get('name').trim();
+  const monthlyIncome = Number(data.get('monthlyIncome')) || 0;
+  if (!name) return;
+  const char = await DB.getCharacter();
+  char.name = name;
+  char.monthlyIncome = monthlyIncome;
+  char.onboarded = true;
+  await DB.saveCharacter(char);
+  $('#screen-onboarding').classList.remove('active');
+  await startApp();
+}
+
+async function startApp() {
   await checkMoneyQuestRewards();
   await renderAll();
-
   let lastTab = 'home';
   try {
     lastTab = localStorage.getItem('lastSelectedTab') || 'home';
   } catch (e) {}
   switchScreen(lastTab);
+}
+
+// ---------------- INIT ----------------
+async function init() {
+  loadTheme();
+  await DB.seedDefaults();
+  state.categories = await DB.getAllCategories();
+  bindEvents();
+  $('#onboarding-form').addEventListener('submit', handleOnboardingSubmit);
+
+  const character = await DB.getCharacter();
+  if (!character.onboarded) {
+    $('#screen-onboarding').classList.add('active');
+  } else {
+    await startApp();
+  }
 
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(() => {});

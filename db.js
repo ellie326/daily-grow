@@ -130,6 +130,8 @@ export async function seedDefaults() {
       gold: 0,
       level: 1,
       claimedMoneyQuests: [],
+      monthlyIncome: 0,
+      onboarded: false,
     });
   }
 }
@@ -175,6 +177,7 @@ export const getAllTransactions = () => getAll('transactions');
 // ---- categories ----
 export const getAllCategories = () => getAll('categories');
 export const addCategory = (c) => put('categories', c);
+export const deleteCategory = (id) => remove('categories', id);
 
 // ---- budgetGoals ----
 export const saveBudgetGoal = (b) => put('budgetGoals', b);

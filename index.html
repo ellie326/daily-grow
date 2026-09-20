@@ -16,6 +16,24 @@
 
 <div id="toast" class="toast" aria-live="polite"></div>
 
+<!-- 최초 실행 온보딩 -->
+<section id="screen-onboarding" class="onboarding-screen">
+  <div class="onboarding-card">
+    <h1>🌱 하루키우기</h1>
+    <p>시작하기 전에 몇 가지만 알려주세요.</p>
+    <form id="onboarding-form">
+      <label>닉네임<input type="text" name="name" required placeholder="예: Ellie" /></label>
+      <label>월급 (원)<input type="number" name="monthlyIncome" inputmode="numeric" placeholder="선택 입력" /></label>
+      <button type="submit" class="primary-btn onboarding-submit">시작하기</button>
+    </form>
+  </div>
+</section>
+
+<header id="top-bar" class="top-bar">
+  <span class="top-bar-title">🌱 하루키우기</span>
+  <button id="settings-btn" class="icon-btn" aria-label="설정" data-open-modal="settings-modal">⚙️</button>
+</header>
+
 <main id="app">
 
   <!-- 홈 -->
@@ -110,29 +128,11 @@
 
     <div class="stat-list" id="mylife-stats"></div>
 
-    <h2 class="section-title">🏷️ 소비 카테고리</h2>
-    <div id="category-list" class="category-list"></div>
-    <form id="category-form" class="category-form">
-      <input type="text" name="icon" maxlength="2" placeholder="🏷️" required />
-      <input type="text" name="name" placeholder="새 카테고리 이름" required />
-      <button type="submit" class="secondary-btn">추가</button>
-    </form>
-
-    <h2 class="section-title">예산 설정</h2>
-    <button class="secondary-btn" data-open-modal="budget-modal">예산 설정하기</button>
-
     <h2 class="section-title">🏠 방 아이템 상점</h2>
     <div id="shop-list" class="shop-list"></div>
 
     <h2 class="section-title">🏆 업적</h2>
     <ul id="achievement-list" class="achievement-list"></ul>
-
-    <h2 class="section-title">데이터 백업</h2>
-    <div class="backup-row">
-      <button class="secondary-btn" id="export-btn">내보내기 (JSON)</button>
-      <label class="secondary-btn" for="import-file">가져오기</label>
-      <input type="file" id="import-file" accept="application/json" hidden />
-    </div>
   </section>
 
 </main>
@@ -249,6 +249,42 @@
         <button type="submit" class="primary-btn">저장</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- 설정 모달 -->
+<div class="modal-backdrop" id="settings-modal">
+  <div class="modal">
+    <h3>설정</h3>
+
+    <label>닉네임<input type="text" id="settings-name" /></label>
+    <label>월급 (원)<input type="number" id="settings-income" inputmode="numeric" /></label>
+    <button type="button" class="secondary-btn" id="settings-profile-save">프로필 저장</button>
+
+    <h4 class="settings-subtitle">🏷️ 소비 카테고리</h4>
+    <div id="settings-category-list" class="category-list"></div>
+    <form id="settings-category-form" class="category-form">
+      <input type="text" name="icon" maxlength="2" placeholder="🏷️" required />
+      <input type="text" name="name" placeholder="새 카테고리 이름" required />
+      <button type="submit" class="secondary-btn">추가</button>
+    </form>
+
+    <h4 class="settings-subtitle">💰 예산</h4>
+    <button type="button" class="secondary-btn" data-open-modal="budget-modal">예산 설정하기</button>
+
+    <h4 class="settings-subtitle">🎨 인터페이스 색상</h4>
+    <div id="theme-swatches" class="theme-swatches"></div>
+
+    <h4 class="settings-subtitle">💾 데이터 백업</h4>
+    <div class="backup-row">
+      <button type="button" class="secondary-btn" id="export-btn">내보내기 (JSON)</button>
+      <label class="secondary-btn" for="import-file">가져오기</label>
+      <input type="file" id="import-file" accept="application/json" hidden />
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="ghost-btn" data-close-modal>닫기</button>
+    </div>
   </div>
 </div>
 
