@@ -1,4 +1,4 @@
-const CACHE_NAME = 'daily-grow-v3';
+const CACHE_NAME = 'daily-grow-v4';
 const APP_SHELL = [
   './',
   './index.html',
@@ -8,6 +8,7 @@ const APP_SHELL = [
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png',
+  './assets/char-girl-placeholder.png',
 ];
 
 self.addEventListener('install', (event) => {

@@ -15,9 +15,9 @@ const LEVEL_BASE = 100;
 const LEVEL_EXP_FACTOR = 1.5;
 const requiredExpForLevel = (level) => Math.round(LEVEL_BASE * Math.pow(level, LEVEL_EXP_FACTOR));
 
-const CHAR_TIERS = ['🧍', '🧍‍♀️', '🧙‍♀️', '🦸‍♀️'];
 const ROOM_TIERS = ['🌱', '🪴', '🛋️', '🏰'];
 const tierForLevel = (level) => Math.min(3, Math.floor((level - 1) / 5));
+const CHAR_REACTIONS = ['✨', '😄', '🥰', '🎉', '💪'];
 
 const ROOM_ITEMS = [
   { id: 'plant', name: '작은 화분', emoji: '🪴', price: 100 },
@@ -121,6 +121,101 @@ function renderThemeSwatches() {
   $('#theme-swatches').innerHTML = THEMES.map(
     (t) => `<button type="button" class="theme-swatch ${state.theme === t.id ? 'selected' : ''}" data-theme="${t.id}" style="background:${t.primary}"></button>`
   ).join('');
+}
+
+// ---------------- CHARACTER DRAG (홈 화면) ----------------
+function applyCharPosition(xPercent, yPercent) {
+  const el = $('#home-char-emoji');
+  if (!el) return;
+  el.style.left = `${xPercent}%`;
+  el.style.top = `${yPercent}%`;
+}
+
+function loadCharPosition() {
+  try {
+    const raw = localStorage.getItem('charPosition');
+    if (raw) {
+      const pos = JSON.parse(raw);
+      applyCharPosition(pos.x, pos.y);
+    }
+  } catch (e) {}
+}
+
+function saveCharPosition(xPercent, yPercent) {
+  try {
+    localStorage.setItem('charPosition', JSON.stringify({ x: xPercent, y: yPercent }));
+  } catch (e) {}
+}
+
+function clampPercent(v) {
+  return Math.min(90, Math.max(10, v));
+}
+
+let reactionTimeout = null;
+function triggerCharReaction() {
+  const wrap = $('#home-char-emoji');
+  const badge = $('#home-char-reaction');
+  if (!wrap || !badge) return;
+  clearTimeout(reactionTimeout);
+  const reaction = CHAR_REACTIONS[Math.floor(Math.random() * CHAR_REACTIONS.length)];
+  badge.textContent = reaction;
+  badge.classList.add('show');
+  wrap.classList.add('reacting');
+  reactionTimeout = setTimeout(() => {
+    badge.classList.remove('show');
+    wrap.classList.remove('reacting');
+  }, 700);
+}
+
+function initCharDrag() {
+  const char = $('#home-char-emoji');
+  const scene = $('#home-room-scene');
+  if (!char || !scene) return;
+  let dragging = false;
+  let startX = 0;
+  let startY = 0;
+  const TAP_THRESHOLD = 6;
+
+  const positionFromEvent = (e) => {
+    const rect = scene.getBoundingClientRect();
+    return {
+      x: clampPercent(((e.clientX - rect.left) / rect.width) * 100),
+      y: clampPercent(((e.clientY - rect.top) / rect.height) * 100),
+    };
+  };
+
+  char.addEventListener('pointerdown', (e) => {
+    dragging = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    char.classList.add('dragging');
+    try {
+      char.setPointerCapture(e.pointerId);
+    } catch (err) {}
+    e.preventDefault();
+  });
+
+  char.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    const { x, y } = positionFromEvent(e);
+    applyCharPosition(x, y);
+  });
+
+  const endDrag = (e) => {
+    if (!dragging) return;
+    dragging = false;
+    char.classList.remove('dragging');
+    const moved = Math.hypot(e.clientX - startX, e.clientY - startY);
+    if (moved < TAP_THRESHOLD) {
+      triggerCharReaction();
+      return;
+    }
+    const { x, y } = positionFromEvent(e);
+    applyCharPosition(x, y);
+    saveCharPosition(x, y);
+  };
+  char.addEventListener('pointerup', endDrag);
+  char.addEventListener('pointercancel', endDrag);
 }
 
 // ---------------- QUEST DUE-DATE LOGIC ----------------
@@ -353,7 +448,6 @@ async function renderHome() {
 
   const tier = tierForLevel(char.level);
   $('#home-room-emoji').textContent = ROOM_TIERS[tier];
-  $('#home-char-emoji').textContent = CHAR_TIERS[tier];
 
   const dateStr = todayKey();
   const schedules = await DB.getSchedulesByDate(dateStr);
@@ -1054,6 +1148,9 @@ async function handleImport(e) {
 // ---------------- EVENT BINDING ----------------
 function bindEvents() {
   $$('.nav-btn').forEach((btn) => btn.addEventListener('click', () => switchScreen(btn.dataset.screen)));
+
+  initCharDrag();
+  loadCharPosition();
 
   $$('[data-open-modal]').forEach((btn) => {
     btn.addEventListener('click', () => {
