@@ -1,0 +1,26 @@
+{
+  "name": "하루키우기",
+  "short_name": "하루키우기",
+  "description": "해야 할 일과 소비를 퀘스트로 관리하고, 성공할수록 캐릭터와 방이 성장하는 생활 관리 앱",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#3fa34d",
+  "lang": "ko",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

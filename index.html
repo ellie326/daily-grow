@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+<title>하루키우기</title>
+<meta name="theme-color" content="#3FA34D" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="하루키우기" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div id="toast" class="toast" aria-live="polite"></div>
+
+<main id="app">
+
+  <!-- 홈 -->
+  <section id="screen-home" class="screen">
+    <div class="home-card">
+      <div class="home-topbar">
+        <span class="level-badge" id="home-level">Lv.1</span>
+        <span class="exp-text" id="home-exp-text">0 / 100 EXP</span>
+      </div>
+      <div class="exp-bar"><div class="exp-bar-fill" id="home-exp-fill"></div></div>
+      <div class="room-scene" id="home-room-scene">
+        <div class="room-emoji" id="home-room-emoji">🌱</div>
+        <div class="char-emoji" id="home-char-emoji">🧍‍♀️</div>
+      </div>
+      <p class="home-message" id="home-message">오늘도 잘하고 있어!</p>
+      <div class="home-progress">
+        <div class="home-progress-label">
+          <span>Today's Quest</span>
+          <span id="home-progress-count">0/0</span>
+        </div>
+        <div class="progress-bar"><div class="progress-bar-fill" id="home-progress-fill"></div></div>
+      </div>
+      <div class="gold-badge">💰 <span id="home-gold">0</span> G</div>
+    </div>
+  </section>
+
+  <!-- 퀘스트 -->
+  <section id="screen-quest" class="screen">
+    <header class="screen-header">
+      <h1>TODAY</h1>
+      <span id="quest-date-label"></span>
+    </header>
+
+    <div class="quest-group">
+      <h2>👑 MAIN QUEST <button class="add-btn" data-open-modal="schedule-modal">+</button></h2>
+      <ul id="quest-main-list" class="quest-list"></ul>
+    </div>
+
+    <div class="quest-group">
+      <h2>🌱 SUB QUEST <button class="add-btn" data-open-modal="subquest-modal">+</button></h2>
+      <ul id="quest-sub-list" class="quest-list"></ul>
+    </div>
+
+    <div class="quest-group">
+      <h2>💰 MONEY QUEST <button class="add-btn" data-open-modal="transaction-modal">+</button></h2>
+      <div id="quest-money-card" class="money-card"></div>
+    </div>
+
+    <div class="home-progress" style="margin-top:16px;">
+      <div class="home-progress-label">
+        <span>Today's Progress</span>
+        <span id="quest-progress-count">0%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-bar-fill" id="quest-progress-fill"></div></div>
+    </div>
+  </section>
+
+  <!-- 주별 -->
+  <section id="screen-week" class="screen">
+    <header class="screen-header">
+      <button class="nav-arrow" id="week-prev">‹</button>
+      <h1 id="week-label">이번 주</h1>
+      <button class="nav-arrow" id="week-next">›</button>
+    </header>
+    <div id="week-list"></div>
+  </section>
+
+  <!-- 월별 -->
+  <section id="screen-month" class="screen">
+    <header class="screen-header">
+      <button class="nav-arrow" id="month-prev">‹</button>
+      <h1 id="month-label">2026년 9월</h1>
+      <button class="nav-arrow" id="month-next">›</button>
+    </header>
+    <div class="month-summary" id="month-summary"></div>
+    <div class="calendar-grid" id="calendar-weekdays">
+      <div>일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div>
+    </div>
+    <div class="calendar-grid" id="calendar-days"></div>
+    <div id="month-day-detail" class="month-day-detail"></div>
+  </section>
+
+  <!-- MY LIFE -->
+  <section id="screen-mylife" class="screen">
+    <header class="screen-header"><h1 id="mylife-name">Ellie</h1></header>
+    <div class="home-topbar">
+      <span class="level-badge" id="mylife-level">Lv.1</span>
+      <span class="exp-text" id="mylife-exp-text">0 / 100 EXP</span>
+    </div>
+    <div class="exp-bar"><div class="exp-bar-fill" id="mylife-exp-fill"></div></div>
+    <div class="gold-badge">💰 <span id="mylife-gold">0</span> G</div>
+
+    <div class="stat-list" id="mylife-stats"></div>
+
+    <h2 class="section-title">🏷️ 소비 카테고리</h2>
+    <div id="category-list" class="category-list"></div>
+    <form id="category-form" class="category-form">
+      <input type="text" name="icon" maxlength="2" placeholder="🏷️" required />
+      <input type="text" name="name" placeholder="새 카테고리 이름" required />
+      <button type="submit" class="secondary-btn">추가</button>
+    </form>
+
+    <h2 class="section-title">예산 설정</h2>
+    <button class="secondary-btn" data-open-modal="budget-modal">예산 설정하기</button>
+
+    <h2 class="section-title">🏠 방 아이템 상점</h2>
+    <div id="shop-list" class="shop-list"></div>
+
+    <h2 class="section-title">🏆 업적</h2>
+    <ul id="achievement-list" class="achievement-list"></ul>
+
+    <h2 class="section-title">데이터 백업</h2>
+    <div class="backup-row">
+      <button class="secondary-btn" id="export-btn">내보내기 (JSON)</button>
+      <label class="secondary-btn" for="import-file">가져오기</label>
+      <input type="file" id="import-file" accept="application/json" hidden />
+    </div>
+  </section>
+
+</main>
+
+<nav id="bottom-nav" class="bottom-nav">
+  <button class="nav-btn" data-screen="month"><span>📅</span>월별</button>
+  <button class="nav-btn" data-screen="week"><span>🗓️</span>주별</button>
+  <button class="nav-btn active" data-screen="home"><span>🏠</span>홈</button>
+  <button class="nav-btn" data-screen="quest"><span>📜</span>퀘스트</button>
+  <button class="nav-btn" data-screen="mylife"><span>🧍</span>MY LIFE</button>
+</nav>
+
+<!-- 일정(메인 퀘스트) 모달 -->
+<div class="modal-backdrop" id="schedule-modal">
+  <div class="modal">
+    <h3>메인 퀘스트 (일정)</h3>
+    <form id="schedule-form">
+      <input type="hidden" name="id" />
+      <label>제목<input type="text" name="title" required /></label>
+      <label>날짜<input type="date" name="date" required /></label>
+      <label>시간<input type="time" name="time" /></label>
+      <label>메모<textarea name="description"></textarea></label>
+      <div class="modal-actions">
+        <button type="button" class="danger-btn" id="schedule-delete-btn" hidden>삭제</button>
+        <button type="button" class="ghost-btn" data-close-modal>취소</button>
+        <button type="submit" class="primary-btn">저장</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 서브 퀘스트 모달 -->
+<div class="modal-backdrop" id="subquest-modal">
+  <div class="modal">
+    <h3>서브 퀘스트 (반복 습관)</h3>
+    <form id="subquest-form">
+      <input type="hidden" name="id" />
+      <label>제목<input type="text" name="title" required /></label>
+      <label>반복
+        <select name="repeatType">
+          <option value="daily">매일</option>
+          <option value="weekly">특정 요일</option>
+          <option value="period">특정 기간 (매일)</option>
+        </select>
+      </label>
+      <div id="repeat-weekly-days" class="weekday-picker" hidden>
+        <label><input type="checkbox" value="0" />일</label>
+        <label><input type="checkbox" value="1" />월</label>
+        <label><input type="checkbox" value="2" />화</label>
+        <label><input type="checkbox" value="3" />수</label>
+        <label><input type="checkbox" value="4" />목</label>
+        <label><input type="checkbox" value="5" />금</label>
+        <label><input type="checkbox" value="6" />토</label>
+      </div>
+      <div id="repeat-period-range" class="period-range" hidden>
+        <label>시작일<input type="date" name="periodStart" /></label>
+        <label>종료일<input type="date" name="periodEnd" /></label>
+      </div>
+      <label>태그 (스탯 반영)
+        <select name="tag">
+          <option value="health">❤️ 운동/건강</option>
+          <option value="knowledge">🧠 공부/독서</option>
+          <option value="social">✨ 기타</option>
+        </select>
+      </label>
+      <div class="modal-actions">
+        <button type="button" class="danger-btn" id="subquest-delete-btn" hidden>삭제</button>
+        <button type="button" class="ghost-btn" data-close-modal>취소</button>
+        <button type="submit" class="primary-btn">저장</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 거래(소비) 모달 -->
+<div class="modal-backdrop" id="transaction-modal">
+  <div class="modal">
+    <h3>소비 기록</h3>
+    <form id="transaction-form">
+      <input type="hidden" name="id" />
+      <label>금액<input type="number" name="amount" inputmode="numeric" required /></label>
+      <label>카테고리
+        <select name="categoryId" id="transaction-category-select"></select>
+      </label>
+      <label>날짜<input type="date" name="date" required /></label>
+      <label>메모<input type="text" name="memo" placeholder="사용처 (선택)" /></label>
+      <div class="modal-actions">
+        <button type="button" class="danger-btn" id="transaction-delete-btn" hidden>삭제</button>
+        <button type="button" class="ghost-btn" data-close-modal>취소</button>
+        <button type="submit" class="primary-btn">저장</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 예산 모달 -->
+<div class="modal-backdrop" id="budget-modal">
+  <div class="modal">
+    <h3>예산 설정</h3>
+    <form id="budget-form">
+      <label>기간
+        <select name="period" id="budget-period-select">
+          <option value="month">월간</option>
+          <option value="week">주간</option>
+          <option value="day">일간</option>
+        </select>
+      </label>
+      <label>기준 날짜<input type="date" name="baseDate" required /></label>
+      <label>전체 예산 (원)<input type="number" name="totalBudget" inputmode="numeric" required /></label>
+      <div id="budget-category-inputs" class="budget-category-inputs"></div>
+      <div class="modal-actions">
+        <button type="button" class="secondary-btn" id="budget-autodist-btn">자동 분배</button>
+        <button type="button" class="ghost-btn" data-close-modal>취소</button>
+        <button type="submit" class="primary-btn">저장</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
